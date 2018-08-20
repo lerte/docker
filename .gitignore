@@ -1,2 +1,4 @@
 mongodb/data/*
 mysql/data/*
+wordpress/wp-admin/*
+wordpress/wp-includes/*
