@@ -1,0 +1,47 @@
+.wbt-notice{
+    padding-right: 38px;
+    position: relative;
+}
+.tongji-main{
+    background-color: #ececec;
+}
+.tongji-content{
+    padding: 20px;
+    background-color: #fff;
+}
+.tongji-content .filter{
+    margin: 20px 0 0;
+}
+.tongji-content .filter li{
+    display: inline-block;
+    border-right: 1px solid #f2f4f4;
+}
+.tongji-content .table{
+    width: 100%;
+    line-height: 2;
+    border-collapse: collapse;
+}
+table>thead>tr>td, table>thead>tr>th{
+    border: 1px solid #ddd;
+    border-bottom-width: 2px;
+}
+table>tbody>tr:hover{
+    background-color: #f5f5f5;
+}
+table td{
+    border: 1px solid #ededef;
+}
+.visit-type-new .visit-type-summary-data{
+    color: #48cb6d;
+    font-size: 30px;
+}
+.visit-type-new .ratil-unit{
+    font-size: 18px;
+}
+.visit-type-old .visit-type-summary-data{
+    color: #51a8f9;
+    font-size: 30px;
+}
+.visit-type-old .ratil-unit{
+    font-size: 18px;
+}

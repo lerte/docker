@@ -1,7 +1,7 @@
 <?php
-require_once('LoginConnection.inc.php');
+require_once('BaiduTongjiLoginConnection.inc.php');
 
-class LoginService {
+class BaiduTongjiLoginService {
     private $loginUrl;
     private $uuid;
     public function __construct($loginUrl, $uuid, $account_type) {
@@ -10,7 +10,7 @@ class LoginService {
       	$this->account_type = $account_type;
     }
     public function preLogin($userName, $token) {
-        $preLogin = new LoginConnection();
+        $preLogin = new BaiduTongjiLoginConnection();
         $preLogin->init($this->loginUrl, $this->uuid, $this->account_type);
         $preLoginData = array(
             'username' => $userName,
@@ -40,7 +40,7 @@ class LoginService {
     }
 
     public function doLogin($userName, $password, $token) {
-        $doLogin = new LoginConnection();
+        $doLogin = new BaiduTongjiLoginConnection();
         $doLogin->init($this->loginUrl, $this->uuid, $this->account_type);
         $doLoginData = array(
             'username' => $userName,
@@ -72,7 +72,7 @@ class LoginService {
     }
 
     public function doLogout($userName, $token, $ucid, $st) {
-        $doLogout = new LoginConnection();
+        $doLogout = new BaiduTongjiLoginConnection();
         $doLogout->init($this->loginUrl);
         $doLogoutData = array(
             'username' => $userName,

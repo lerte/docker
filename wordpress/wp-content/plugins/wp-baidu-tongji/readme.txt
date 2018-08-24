@@ -1,4 +1,4 @@
-=== Baidu Tongji ===
+=== WP Baidu Tongji ===
 Contributors: Lerte
 Donate link: https://lerte.com/donate
 Tags: Baidu Tongji, 百度统计, 百度统计查看

@@ -1,7 +1,7 @@
 <?php
-require_once('DataApiConnection.inc.php');
+require_once('BaiduTongjiDataApiConnection.inc.php');
 
-class ReportService {
+class BaiduTongjiReportService {
     private $apiUrl;
     private $userName;
     private $account_type;
@@ -21,7 +21,7 @@ class ReportService {
     }
     
     public function getSiteList() {
-        $apiConnection = new DataApiConnection();
+        $apiConnection = new BaiduTongjiDataApiConnection();
         $apiConnection->init($this->apiUrl . '/getSiteList', $this->uuid, $this->ucid);
         $apiConnectionData = array(
             'header' => array(
@@ -41,7 +41,7 @@ class ReportService {
     }
 
     public function getData($parameters) {
-        $apiConnection = new DataApiConnection();
+        $apiConnection = new BaiduTongjiDataApiConnection();
         $apiConnection->init($this->apiUrl . '/getData', $this->uuid, $this->ucid);
         $apiConnectionData = array(
             'header' => array(

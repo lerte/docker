@@ -1,5 +1,5 @@
 <?php
-class RsaPublicEncrypt {
+class BaiduTongjiRsaPublicEncrypt {
     private $publicKey;
     public function __construct(){
     }
