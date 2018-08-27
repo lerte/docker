@@ -26,7 +26,11 @@ class WP_Baidu_Tongji {
     function init_assets() {
         $assets_dir = plugins_url('/assets', __FILE__);
         wp_enqueue_script('jquery');
-        wp_enqueue_script('vue', $assets_dir . '/js/vue.min.js');
+		if(preg_match('/localhost|127.0.0.1/i', get_bloginfo('url'))){
+			wp_enqueue_script('vue', $assets_dir . '/js/vue.js');
+		}else{
+			wp_enqueue_script('vue', $assets_dir . '/js/vue.min.js');
+		}
         wp_enqueue_script('wp-baidu-tongji', $assets_dir . '/js/main.js');
         wp_enqueue_style('wp-baidu-tongji', $assets_dir . '/css/style.css');
     }
