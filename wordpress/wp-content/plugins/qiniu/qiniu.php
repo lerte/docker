@@ -59,10 +59,10 @@ class QiniuPlugin {
 		wp_enqueue_script('qiniu', QINIU_PLUGIN_URL . 'js/main.js');
 	}
 
-	function qiniu_init() {
-		$options = get_option('qiniu_options');
-		$accessKey = $options['qiniu_ak'];
-		$secretKey = $options['qiniu_sk'];
+	function qiniu_init(){
+		$options = get_option('qiniu_options', array());
+		$accessKey = isset($options['qiniu_ak']) ? $options['qiniu_ak'] : '';
+		$secretKey = isset($options['qiniu_sk']) ? $options['qiniu_sk'] : '';
 		if($accessKey && $secretKey){
 			$this->auth = new Auth($accessKey, $secretKey);
 			$this->uploadMgr = new UploadManager();
@@ -132,6 +132,9 @@ class QiniuPlugin {
 	}
 
 	function is_in_qiniu($qiniu_key){
+		if(!$this->qiniu_init()){
+			return false;
+		}
 		list($fileInfo, $err) = $this->bucketMgr->stat($this->bucket, $qiniu_key);
 		if($err){
 			return false;
