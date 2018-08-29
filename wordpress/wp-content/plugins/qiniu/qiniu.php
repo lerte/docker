@@ -68,6 +68,8 @@ class QiniuPlugin {
 			$this->uploadMgr = new UploadManager();
 			$this->bucketMgr = new BucketManager($this->auth);
 			$this->cdnManager = new CdnManager($this->auth);
+		}else{
+			return false;
 		}
 		list($buckets, $err) = $this->bucketMgr->buckets(true);
 		if ($err) {
