@@ -12,7 +12,6 @@ if ( ! function_exists( 'kola_setup' ) ) {
 		if ( ! isset( $content_width ) ) $content_width = 620;
 		// Post thumbnails
 		add_theme_support( 'post-thumbnails' );
-		add_image_size( 'post-image', 620, 9999 );
 		// Title tag
 		add_theme_support( 'title-tag' );
 		// Post formats
@@ -146,6 +145,6 @@ add_action( 'customize_register', array( 'kola_customize', 'kola_register' ) );
 // Enqueue live preview javascript in Theme Customizer admin screen
 add_action( 'customize_preview_init', array( 'kola_customize' , 'kola_live_preview' ) );
 
-remove_filter ( 'the_content', 'wpautop' );//移除文章p自动标签
-remove_filter ( 'the_excerpt', 'wpautop' );//移除摘要p自动标签
-remove_filter( 'comment_text', 'wpautop', 30 );//取消评论自动
+remove_filter( 'the_content', 'wpautop' ); //移除文章p自动标签
+remove_filter( 'the_excerpt', 'wpautop' ); //移除摘要p自动标签
+remove_filter( 'comment_text', 'wpautop', 30 ); //取消评论自动
