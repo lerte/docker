@@ -43,9 +43,11 @@ class QiniuPlugin {
 		add_filter('wp_delete_file', array($this, 'delete_file'), 1, 1);
 		add_filter('intermediate_image_sizes_advanced', array($this, 'add_image_insert_override'), 1, 2);
 	}
+
 	public function QiniuPlugin(){
 		self::__construct();
 	}
+	
 	function qiniu_include_assets() {
 		wp_enqueue_style('mfp-style', QINIU_PLUGIN_URL . 'css/magnific-popup.min.css');
 		wp_enqueue_style('qiniu-style', QINIU_PLUGIN_URL. 'css/qiniu.css?sdk='.QINIU_SDK_VERSION);
@@ -131,18 +133,6 @@ class QiniuPlugin {
 		return round($size, 2) . ' ' . $units[$i];
 	}
 
-	function is_in_qiniu($qiniu_key){
-		if(!$this->qiniu_init()){
-			return false;
-		}
-		list($fileInfo, $err) = $this->bucketMgr->stat($this->bucket, $qiniu_key);
-		if($err){
-			return false;
-		}else{
-			return true;
-		}
-	}
-
 	function generate_qiniu_key($post_id){
 		$attach_file = get_post_meta($post_id)['_wp_attached_file'][0];
 		$file_dir = wp_upload_dir()['basedir'].DIRECTORY_SEPARATOR.$attach_file;
@@ -178,11 +168,10 @@ class QiniuPlugin {
 			echo $this->HumanReadableFilesize(filesize($file_dir));
 		}
 		if($column_name == 'media_url'){
-			$qiniu_key = $this->generate_qiniu_key($post_id);
-			if($qiniu_key && $this->is_in_qiniu($qiniu_key)){
+			if(isset(get_post_meta($post_id)['qiniu-key'])){
 				echo '<span style="line-height: 24px;"><img src='.QINIU_PLUGIN_URL . 'images/edit_icon.png style="vertical-align: middle;" width="24" height="24" />已上传</span>';
 			}else{
-				echo "<p id='uploadToQiniu' data-post-id='$post_id' class='button button-primary'>".__('上传至七牛', 'qiniu')."</p>";
+				echo "<p data-post-id='$post_id' class='upload-to-qiniu button button-primary'>".__('上传至七牛', 'qiniu')."</p>";
 			}
 		}
 	}
@@ -200,25 +189,26 @@ class QiniuPlugin {
 		if ($err !== null) {
 			wp_send_json(array("error" => true, "message" => $err));
 		} else {
+			update_post_meta($post_id, 'qiniu-key', $key);
 			wp_send_json(array("success" => true, "message" => $ret));
 		}
 	}
 	
 	function get_attachment_url($url, $post_id){
 		global $pagenow;
-		$qiniu_key = $this->generate_qiniu_key($post_id);
-		if(!$qiniu_key || !$this->is_in_qiniu($qiniu_key)){
+		if(!isset(get_post_meta($post_id)['qiniu-key'])){
 			return $url;
-		}
-		list($domains, $err) = $this->bucketMgr->domains($this->bucket);
-		if(strpos($url, $domains[0]) == false){
-			if($pagenow == 'upload.php'){
-				return 'http://'.$domains[0].'/'.$qiniu_key.'?imageView2/1/w/140';
-			}else{
-				return 'http://'.$domains[0].'/'.$qiniu_key;
+		}else{
+			$qiniu_key = get_post_meta($post_id)['qiniu-key'][0];
+			list($domains, $err) = $this->bucketMgr->domains($this->bucket);
+			if(strpos($url, $domains[0]) == false){
+				if($pagenow == 'upload.php'){
+					return 'http://'.$domains[0].'/'.$qiniu_key.'?imageView2/1/w/140';
+				}else{
+					return 'http://'.$domains[0].'/'.$qiniu_key;
+				}
 			}
 		}
-		return $url;
 	}
 
 	function delete_file($filepath){
@@ -227,11 +217,10 @@ class QiniuPlugin {
 		$file_extension = pathinfo($attach_file)['extension'];
 		$md5_hash = md5_file($filepath).'.'.$file_extension;
 		$qiniu_key = pathinfo($attach_file)['dirname'].DIRECTORY_SEPARATOR.$md5_hash;
-		if($this->is_in_qiniu($qiniu_key)){
-			$err = $this->bucketMgr->delete($this->bucket, $qiniu_key);
-			if($err){
-				print_r($err);
-			}
+
+		$err = $this->bucketMgr->delete($this->bucket, $qiniu_key);
+		if($err){
+			// ignore this
 		}
 		return $filepath;
 	}
