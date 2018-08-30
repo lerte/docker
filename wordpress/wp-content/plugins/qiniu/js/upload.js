@@ -1,6 +1,5 @@
 (function($){
     $('#uploadToQiniu').click(function(){
-        alert();
         $.ajax({
             type    :'POST',
             url     : ajaxurl,

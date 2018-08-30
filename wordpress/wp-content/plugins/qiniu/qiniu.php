@@ -147,6 +147,9 @@ class QiniuPlugin {
 		$attach_file = get_post_meta($post_id)['_wp_attached_file'][0];
 		$file_dir = wp_upload_dir()['basedir'].DIRECTORY_SEPARATOR.$attach_file;
 		$file_extension = pathinfo($attach_file)['extension'];
+		if(!file_exists($file_dir)){
+			return false;
+		}
 		$md5_hash = md5_file($file_dir).'.'.$file_extension;
 		$qiniu_key = pathinfo($attach_file)['dirname'].DIRECTORY_SEPARATOR.$md5_hash;
 		return $qiniu_key;
@@ -167,12 +170,16 @@ class QiniuPlugin {
 	function media_lib_upload_column_value($column_name, $post_id){
 		wp_enqueue_script('upload', QINIU_PLUGIN_URL . 'js/upload.js');
 		$file_dir = $this->get_file_path($post_id);
+		if(!file_exists($file_dir)){
+			echo '<span>'.__('文件不存在', 'qiniu').'</span>';
+			return;
+		}
 		if($column_name == 'file_size'){
 			echo $this->HumanReadableFilesize(filesize($file_dir));
 		}
 		if($column_name == 'media_url'){
 			$qiniu_key = $this->generate_qiniu_key($post_id);
-			if($this->is_in_qiniu($qiniu_key)){
+			if($qiniu_key && $this->is_in_qiniu($qiniu_key)){
 				echo '<span style="line-height: 24px;"><img src='.QINIU_PLUGIN_URL . 'images/edit_icon.png style="vertical-align: middle;" width="24" height="24" />已上传</span>';
 			}else{
 				echo "<p id='uploadToQiniu' data-post-id='$post_id' class='button button-primary'>".__('上传至七牛', 'qiniu')."</p>";
@@ -186,7 +193,9 @@ class QiniuPlugin {
 		$filePath = $this->get_file_path($post_id);
 		$key = $this->generate_qiniu_key($post_id);
 		$upToken = $this->auth->uploadToken($this->bucket, null, $expires, null, true);
-
+		if(!$key){
+			wp_send_json(array("error" => true, "message" => __('文件不存在', 'qiniu')));
+		}
 		list($ret, $err) = $this->uploadMgr->putFile($upToken, $key, $filePath);
 		if ($err !== null) {
 			wp_send_json(array("error" => true, "message" => $err));
@@ -198,7 +207,7 @@ class QiniuPlugin {
 	function get_attachment_url($url, $post_id){
 		global $pagenow;
 		$qiniu_key = $this->generate_qiniu_key($post_id);
-		if(!$this->is_in_qiniu($qiniu_key)){
+		if(!$qiniu_key || !$this->is_in_qiniu($qiniu_key)){
 			return $url;
 		}
 		list($domains, $err) = $this->bucketMgr->domains($this->bucket);
