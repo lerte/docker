@@ -24,10 +24,10 @@
             </div>
         </div>
         <div class="clear"></div>
-        <div class="updated settings-success set_option" v-if="!options.bucket.length">
+        <div class="updated settings-success set_option" v-if="options.buckets">
             <p><strong>请选择Bucket继续保存</strong></p>   
         </div>
-        <div class="updated settings-success set_option" v-if="!options.domain.length">
+        <div class="updated settings-success set_option" v-if="options.buckets">
             <p><strong>请选择Domain继续保存</strong></p>   
         </div>
         <div class="qiniu_config_in">
