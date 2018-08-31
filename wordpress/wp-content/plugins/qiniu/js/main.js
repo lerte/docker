@@ -19,7 +19,6 @@ if(document.querySelector('#qiniu-settings')){
         el: '#qiniu-settings',
         mixins: [mixin],
         data: {
-            message: '',
             showAK: true,
             showSK: true,
             options: {}
@@ -46,7 +45,7 @@ if(document.querySelector('#qiniu-settings')){
                         ...this.options
                     },
                     success: (data)=> {
-                        this.message = data
+                        this.options = data
                     }       
                 })
             }

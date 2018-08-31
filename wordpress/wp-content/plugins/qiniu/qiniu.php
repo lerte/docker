@@ -22,7 +22,7 @@ define('QINIU_PLUGIN_URL', plugin_dir_url( __FILE__ ));
 if(!class_exists('QiniuPlugin')):
 class QiniuPlugin {
 	public $auth;
-	public $bucket;
+	public $config;
 	public $bucketMgr;
 	public $uploadMgr;
 	public $cdnManager;
@@ -62,9 +62,9 @@ class QiniuPlugin {
 	}
 
 	function qiniu_init(){
-		$options = get_option('qiniu_options', array());
-		$accessKey = isset($options['qiniu_ak']) ? $options['qiniu_ak'] : '';
-		$secretKey = isset($options['qiniu_sk']) ? $options['qiniu_sk'] : '';
+		$this->config = get_option('qiniu_options', array());
+		$accessKey = isset($this->config['qiniu_ak']) ? $this->config['qiniu_ak'] : '';
+		$secretKey = isset($this->config['qiniu_sk']) ? $this->config['qiniu_sk'] : '';
 		if($accessKey && $secretKey){
 			$this->auth = new Auth($accessKey, $secretKey);
 			$this->uploadMgr = new UploadManager();
@@ -77,7 +77,6 @@ class QiniuPlugin {
 		if ($err) {
 			return false;
 		} else {
-			$this->bucket = $buckets[0];
 			return true;
 		}
 	}
@@ -86,15 +85,24 @@ class QiniuPlugin {
         check_ajax_referer('qiniu', 'qiniu_ajax_nonce');
         $options = array();
         $options['qiniu_ak'] = sanitize_text_field($_POST['qiniu_ak']);
-        $options['qiniu_sk'] = sanitize_text_field($_POST['qiniu_sk']);
+		$options['qiniu_sk'] = sanitize_text_field($_POST['qiniu_sk']);
+		$options['bucket'] = sanitize_text_field($_POST['bucket']);
+		$options['domain'] = sanitize_text_field($_POST['domain']);
 		update_option('qiniu_options', $options);
+
 		if($this->qiniu_init()){
-			echo __('Changes saved.').__('恭喜你，你现在可以打开七牛云存储来管理你的图片了', 'qiniu');
-		}else{
-			echo __('Changes saved.').__('但好像配置有无，请检查！', 'qiniu');
+			list($buckets, $err) = $this->bucketMgr->buckets(true);
+			$options['buckets'] = $buckets;
+			foreach($buckets as $bucket){
+				list($domains, $err) = $this->bucketMgr->domains($bucket);
+				$options["$bucket"] = $domains;
+			}
+			update_option('qiniu_options', $options);
 		}
+		
+		wp_send_json($options);
         exit;
-    }
+	}
 
     function get_options(){
         $options = get_option('qiniu_options');
@@ -181,7 +189,7 @@ class QiniuPlugin {
 		$expires = 3600;
 		$filePath = $this->get_file_path($post_id);
 		$key = $this->generate_qiniu_key($post_id);
-		$upToken = $this->auth->uploadToken($this->bucket, null, $expires, null, true);
+		$upToken = $this->auth->uploadToken($this->config['bucket'], null, $expires, null, true);
 		if(!$key){
 			wp_send_json(array("error" => true, "message" => __('文件不存在', 'qiniu')));
 		}
@@ -195,17 +203,17 @@ class QiniuPlugin {
 	}
 	
 	function get_attachment_url($url, $post_id){
+		$this->config = get_option('qiniu_options', array());
 		global $pagenow;
 		if(!isset(get_post_meta($post_id)['qiniu-key'])){
 			return $url;
 		}else{
 			$qiniu_key = get_post_meta($post_id)['qiniu-key'][0];
-			list($domains, $err) = $this->bucketMgr->domains($this->bucket);
-			if(strpos($url, $domains[0]) == false){
+			if(strpos($url, $this->config['domain']) == false){
 				if($pagenow == 'upload.php'){
-					return 'http://'.$domains[0].'/'.$qiniu_key.'?imageView2/1/w/140';
+					return 'http://'.$this->config['domain'].'/'.$qiniu_key.'?imageView2/1/w/140';
 				}else{
-					return 'http://'.$domains[0].'/'.$qiniu_key;
+					return 'http://'.$this->config['domain'].'/'.$qiniu_key;
 				}
 			}
 		}
@@ -218,7 +226,7 @@ class QiniuPlugin {
 		$md5_hash = md5_file($filepath).'.'.$file_extension;
 		$qiniu_key = pathinfo($attach_file)['dirname'].DIRECTORY_SEPARATOR.$md5_hash;
 
-		$err = $this->bucketMgr->delete($this->bucket, $qiniu_key);
+		$err = $this->bucketMgr->delete($this->config['bucket'], $qiniu_key);
 		if($err){
 			// ignore this
 		}

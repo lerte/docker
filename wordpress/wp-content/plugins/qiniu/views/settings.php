@@ -24,8 +24,11 @@
             </div>
         </div>
         <div class="clear"></div>
-        <div class="updated settings-success set_option" v-if="message">
-            <p><strong>{{message}}</strong></p>
+        <div class="updated settings-success set_option" v-if="!options.bucket.length">
+            <p><strong>请选择Bucket继续保存</strong></p>   
+        </div>
+        <div class="updated settings-success set_option" v-if="!options.domain.length">
+            <p><strong>请选择Domain继续保存</strong></p>   
         </div>
         <div class="qiniu_config_in">
             <form action="" method="post" id="qiniu_options_form">
@@ -55,11 +58,21 @@
                             </button>
                         </td>
                     </tr>
+                    <tr v-if="options.buckets">
+                        <th>Buckets & Domains</th>
+                        <td>
+                            <select class="bucket-filters" name="bucket-filter" v-model="options.bucket">
+                                <option :value="bucket" v-for="(bucket, index) in options.buckets" :key="index" v-text="bucket"></option>
+                            </select>
+                            <select class="domain-filters" name="domain-filter" v-model="options.domain">
+                                <option :value="domain" v-for="(domain, index) in options[options.bucket]" :key="index" v-text="domain"></option>
+                            </select>
+                        </td>
+                    </tr>
                     <tr>
                         <th>&nbsp;</th>
                         <td>
                             <p name="submit" @click="setOptions" class="button button-primary"><?php echo __('Save'); ?></p>
-                            <p class="button button-primary submit_progress" style="display:none;">更新中...</p>
                         </td>
                     </tr>
                 </table>
