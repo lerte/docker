@@ -18,8 +18,8 @@ class WP_Baidu_Tongji {
 
     public function __construct(){
         add_action('admin_menu', array($this, 'init_side_menu'));
-        add_action('wp_ajax_get_options', array($this, 'get_options'));
-        add_action('wp_ajax_set_options', array($this, 'set_options'));
+        add_action('wp_ajax_get_tongji_options', array($this, 'get_tongji_options'));
+        add_action('wp_ajax_set_tongji_options', array($this, 'set_tongji_options'));
         add_action('wp_ajax_get_tongji', array($this, 'get_tongji'));
     }
 
@@ -74,7 +74,7 @@ class WP_Baidu_Tongji {
         include_once(WP_BAIDU_TONGJI_PATH.'views/dashboard.php');
     }
     
-    function set_options(){
+    function set_tongji_options(){
         check_ajax_referer('baidu-tongji', 'ajax_nonce');
         $options = array();
         $options['login_url'] = sanitize_text_field($_POST['login_url']);
@@ -85,19 +85,18 @@ class WP_Baidu_Tongji {
         $options['password'] = sanitize_text_field($_POST['password']);
         $options['token'] = sanitize_text_field($_POST['token']);
         update_option('baidu_tongji_options', $options);
-        echo __('Changes saved.');
+        wp_send_json(__('Changes saved.'));
         exit;
     }
 
-    function get_options(){
+    function get_tongji_options(){
         $options = get_option('baidu_tongji_options');
         $options['ajax_nonce'] = wp_create_nonce('baidu-tongji');
-        echo json_encode($options);
+        wp_send_json($options);
         exit;
     }
 
     function get_tongji(){
-        header('Content-Type: application/json');
         require_once(WP_BAIDU_TONGJI_PATH.'includes/BaiduTongjiLoginService.inc.php');
         require_once(WP_BAIDU_TONGJI_PATH.'includes/BaiduTongjiReportService.inc.php');
         $options = get_option('baidu_tongji_options');
@@ -132,7 +131,7 @@ class WP_Baidu_Tongji {
             'gran'          => isset($_GET['gran'])?$_GET['gran']:'day',                                                //时间粒度(只支持有该参数的报告): day/hour/week/month
             'max_results'   => 0                                                                                        //单次获取数据条数，用于分页；默认是20; 0表示获取所有数据
         ));
-        echo $rep['raw'];
+        wp_send_json($rep);
         exit;
     }
 

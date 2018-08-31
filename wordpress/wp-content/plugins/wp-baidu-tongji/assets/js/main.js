@@ -73,13 +73,13 @@ new Vue({
         },
         getOptions(){
             jQuery.ajax({
-                type    :'POST',
+                type    :'GET',
                 url     : ajaxurl,
                 data    : {
-                    action: 'get_options'
+                    action: 'get_tongji_options'
                 },
                 success: (data)=> {
-                    this.options = JSON.parse(data)
+                    this.options = data
                 }       
             })
         },
@@ -88,7 +88,7 @@ new Vue({
 				type    :'POST',
 				url     : ajaxurl,
 				data    : {
-                    action: 'set_options',
+                    action: 'set_tongji_options',
                     ...this.options
 				},
 				success: (data)=> {
