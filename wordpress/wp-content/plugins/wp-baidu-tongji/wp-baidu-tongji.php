@@ -21,6 +21,7 @@ class WP_Baidu_Tongji {
         add_action('wp_ajax_get_tongji_options', array($this, 'get_tongji_options'));
         add_action('wp_ajax_set_tongji_options', array($this, 'set_tongji_options'));
         add_action('wp_ajax_get_tongji', array($this, 'get_tongji'));
+        add_filter('plugin_action_links', array($this, 'add_plugin_action_links'), 10, 2);
     }
 
     function init_assets() {
@@ -134,6 +135,13 @@ class WP_Baidu_Tongji {
         wp_send_json($rep);
         exit;
     }
+
+	function add_plugin_action_links($links, $file) {
+		if ($file == plugin_basename(__FILE__)) {
+			array_push($links, '<a href="admin.php?page=tongji-settings">'.__('Settings').'</a>');
+		}
+		return $links;
+	}
 
 }
 

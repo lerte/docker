@@ -42,6 +42,7 @@ class QiniuPlugin {
 		add_filter('wp_get_attachment_url', array($this, 'get_attachment_url'), 1, 2);
 		add_filter('wp_delete_file', array($this, 'delete_file'), 1, 1);
 		add_filter('intermediate_image_sizes_advanced', array($this, 'add_image_insert_override'), 1, 2);
+		add_filter('plugin_action_links', array($this, 'add_plugin_action_links'), 10, 2);
 	}
 
 	public function QiniuPlugin(){
@@ -246,6 +247,13 @@ class QiniuPlugin {
     function library_page(){
         include_once(QINIU_PLUGIN_PATH.'views/header.php');
         include_once(QINIU_PLUGIN_PATH.'views/library.php');
+	}
+
+	function add_plugin_action_links($links, $file) {
+		if ($file == plugin_basename(__FILE__)) {
+			array_push($links, '<a href="admin.php?page=qiniu-settings">'.__('Settings').'</a>');
+		}
+		return $links;
 	}
 	
     function qiniu_menu(){
