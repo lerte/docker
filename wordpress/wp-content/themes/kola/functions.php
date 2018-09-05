@@ -44,7 +44,8 @@ if ( ! function_exists( 'kola_setup' ) ) :
 
 		// This theme uses wp_nav_menu() in one location.
 		register_nav_menus( array(
-			'menu-1' => esc_html__( 'Primary', 'kola' ),
+			'primary' => esc_html__( 'Primary', 'kola' ),
+			'header-menu' => esc_html__( 'Header Menu', 'kola' ),
 		) );
 
 		/*
@@ -94,7 +95,7 @@ function kola_content_width() {
 	// This variable is intended to be overruled from themes.
 	// Open WPCS issue: {@link https://github.com/WordPress-Coding-Standards/WordPress-Coding-Standards/issues/1043}.
 	// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
-	$GLOBALS['content_width'] = apply_filters( 'kola_content_width', 640 );
+	$GLOBALS['content_width'] = apply_filters( 'kola_content_width', 1170 );
 }
 add_action( 'after_setup_theme', 'kola_content_width', 0 );
 
@@ -113,6 +114,27 @@ function kola_widgets_init() {
 		'before_title'  => '<h2 class="widget-title">',
 		'after_title'   => '</h2>',
 	) );
+    register_sidebar( array(
+        'name'          => esc_html__( 'Header widget area', 'kola' ),
+        'id'            => 'header-widget',
+        'description'   => esc_html__( 'Add widgets here.', 'kola' ),
+        'before_widget' => '<section id="%1$s" class="widget %2$s">',
+        'after_widget'  => '</section>',
+        'before_title'  => '<h2 class="widget-title">',
+        'after_title'   => '</h2>',
+	) );
+    for ( $i = 1; $i <= intval( 4 ); $i++ ) {
+        register_sidebar( array(
+            'name' 				=> sprintf( __( 'Footer %d', 'kola' ), $i ),
+            'id' 				=> sprintf( 'footer-%d', $i ),
+            'description' 		=> sprintf( esc_html__( 'Widgetized Footer Region %d.','kola' ), $i ),
+            'before_widget'     => '<section id="%1$s" class="widget %2$s">',
+            'after_widget' 		=> '</section>',
+            'before_title' 		=> '<h2 class="widget-title">',
+            'after_title' 		=> '</h2>',
+            )
+        );
+    }
 }
 add_action( 'widgets_init', 'kola_widgets_init' );
 
@@ -120,6 +142,7 @@ add_action( 'widgets_init', 'kola_widgets_init' );
  * Enqueue scripts and styles.
  */
 function kola_scripts() {
+	wp_enqueue_style( 'bootstrap', get_template_directory_uri(). '/css/bootstrap.min.css' );
 	wp_enqueue_style( 'kola-style', get_stylesheet_uri() );
 
 	wp_enqueue_script( 'kola-navigation', get_template_directory_uri() . '/js/navigation.js', array(), '20151215', true );
@@ -235,3 +258,43 @@ function rest_pre_dispatch_filter( $result, $server, $request ){
 }
 
 add_filter('rest_pre_dispatch', 'rest_pre_dispatch_filter', 10, 3);
+
+// function to display number of posts.
+function getPostViews($postID){
+    $count_key = 'post_views_count';
+    $count = get_post_meta($postID, $count_key, true);
+    if($count==''){
+        delete_post_meta($postID, $count_key);
+        add_post_meta($postID, $count_key, '0');
+        return "0 View";
+    }
+    return $count.' Views';
+}
+
+// function to count views.
+function setPostViews($postID) {
+    $count_key = 'post_views_count';
+    $count = get_post_meta($postID, $count_key, true);
+    if($count==''){
+        $count = 0;
+        delete_post_meta($postID, $count_key);
+        add_post_meta($postID, $count_key, '0');
+    }else{
+        $count++;
+        update_post_meta($postID, $count_key, $count);
+    }
+}
+
+
+// Add it to a column in WP-Admin
+add_filter('manage_posts_columns', 'posts_column_views');
+add_action('manage_posts_custom_column', 'posts_custom_column_views', 5, 2);
+function posts_column_views($defaults){
+    $defaults['post_views'] = __('Views');
+    return $defaults;
+}
+function posts_custom_column_views($column_name, $id){
+	if($column_name === 'post_views'){
+        echo getPostViews(get_the_ID());
+    }
+}

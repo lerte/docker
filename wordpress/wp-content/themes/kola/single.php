@@ -25,7 +25,7 @@ get_header();
 			if ( comments_open() || get_comments_number() ) :
 				comments_template();
 			endif;
-
+			setPostViews(get_the_ID());
 		endwhile; // End of the loop.
 		?>
 
