@@ -266,9 +266,9 @@ function getPostViews($postID){
     if($count==''){
         delete_post_meta($postID, $count_key);
         add_post_meta($postID, $count_key, '0');
-        return "0 View";
+        return '0';
     }
-    return $count.' Views';
+    return $count;
 }
 
 // function to count views.
@@ -285,12 +285,11 @@ function setPostViews($postID) {
     }
 }
 
-
 // Add it to a column in WP-Admin
 add_filter('manage_posts_columns', 'posts_column_views');
 add_action('manage_posts_custom_column', 'posts_custom_column_views', 5, 2);
 function posts_column_views($defaults){
-    $defaults['post_views'] = __('Views');
+    $defaults['post_views'] = __('浏览量', 'kola');
     return $defaults;
 }
 function posts_custom_column_views($column_name, $id){
